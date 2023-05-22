@@ -1,0 +1,57 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+#infoBoard {
+    border: black solid 1px;
+    border-bottom: none;
+    display: flex;
+    justify-content: space-between;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+#player1_score, #player1_name, #player2_score, #player2_name {
+    text-align: center;
+}
+
+#chooseSide, #chooseName {
+    align-items: center;
+    border: black solid 1px;
+    display: none; /* flex */
+    height: 600px;
+    justify-content: space-around;
+}
+
+#chooseName {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+#left, #right {
+    border: black solid 1px;
+    border-radius: 6px;
+    box-shadow: 3px 3px darkgrey;
+    height: 50px;
+    width: 90px;
+}
+
+canvas {
+    background: pink;
+    display: flex;
+    margin: 0;
+}
+
+h1 {
+    padding: 20px;
+    text-align: center;
+}
+
+#gameContainer {
+    border: black solid 1px;
+    display: none;
+    justify-content: center;
+}

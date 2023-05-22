@@ -38,36 +38,7 @@ function addPlayer(nome, socketId){
     }
 }
 
-function desenhar(){
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
 
-    const paddleHeight = 100;
-    const paddleWidth = 10;
-    const ballSize = 10;
-    const circle = new Path2D();
-    circle.arc(canvas.width/2, canvas.height/2, ballSize, 0, 2 * Math.PI);
-
-    let leftPaddleY = (canvas.height - paddleHeight) / 2;
-    let rightPaddleY = (canvas.height - paddleHeight) / 2;
-    let ball = (canvas.height - ballSize) / 2;
-
-    function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Desenhar paddles
-        ctx.fillStyle = 'white';
-        ctx.fillRect(0, leftPaddleY, paddleWidth, paddleHeight);
-        ctx.fillRect(canvas.width - paddleWidth, rightPaddleY, paddleWidth, paddleHeight);
-
-        // Desenhar bolinha
-        ctx.fill(circle);
-
-        requestAnimationFrame(draw);
-    }
-  
-    draw();
-}
 
 io.on('connection', (clientSocket) => {
     console.log('[Server] Usuário conectado.')
