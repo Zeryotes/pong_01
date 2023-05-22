@@ -36,22 +36,29 @@ function desenhar(event){
     }
   
     draw();
+    // Enviando para o servidor o comando 'desenhar'
+    serverSocket.emit('desenhar')
 }
 
 function submitName(){
-    const name = document.getElementById('inputName');
+    const inputName = document.getElementById('inputName');
     const tela_chooseName = document.getElementById('chooseName');
     tela_chooseName.style.display = "none";
     const tela_chooseSide = document.getElementById('chooseSide');
     tela_chooseSide.style.display = "flex";
+    let name = inputName.value
+    const teste = document.getElementById('player1_name');
+    teste.innerHTML = name
     console.log('[User] ' + name)
-    serverSocket.on('submitName', name)
+    serverSocket.emit('submitName', name)
 }
 
 function chooseSide(side){
-    const test_h1 = document.getElementById('player1_name');
-    test_h1.innerHTML += side
-    serverSocket.on('chooseSide')
+    const tela_chooseSide = document.getElementById('chooseSide');
+    tela_chooseSide.style.display = "none";
+    const tela_gameContainer = document.getElementById('gameContainer');
+    tela_gameContainer.style.display = "flex";
+    serverSocket.on('chooseSide', side)
 }
 
 serverSocket.on('mensagem', (msg) => {

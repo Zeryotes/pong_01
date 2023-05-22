@@ -60,6 +60,10 @@ io.on('connection', (clientSocket) => {
     clientSocket.on('desenhar', () => {
         console.log("Desenhando...")
     })
+
+    clientSocket.on('submitName', (name) =>{
+        console.log('[User] \033[1;31;40m' + name + ' \033[1;30;40mentrou na partida!')
+    })
 })
 
 // Ficar mandando a lista de player para todo mundo a cada 1 segundo
