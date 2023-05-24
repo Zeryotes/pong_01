@@ -28,42 +28,67 @@ function addPlayer(nome, socketId){
 
     if(existingPlayer.length > 0){
         io.to(socketId).emit('erro', '[Server] Já existe um jogador com esse nome')
-    } else {
-        const player = {
-            nome: nome,
-            socketId: socketId
+    } 
+    else {
+        if(players.length >= 2){
+            io.to(socketId).emit('erro', 'Sala lotada, impossível entrar no servidor!')
         }
-        players.push(player);
-        io.exit('player', players);
+        else {
+            if(players.length == 1){
+                console.log('[Server] STATUS: Oponente encontrado')
+            }
+            else if (players.length == 0){
+                console.log('[Server] STATUS: Sala vazia')
+            } 
+            const player = {
+                nome: nome,
+                socketId: socketId,
+                side: null
+            }
+            players.push(player);
+            io.emit('players', players);
+            io.to(socketId).emit('submitNameSucess')
+        }
     }
 }
-
-
 
 io.on('connection', (clientSocket) => {
     console.log('[Server] Usuário conectado.')
 
-    setTimeout(() => {
-        clientSocket.emit('mensagem', 'conectado');
-    }, 2000)
-
-    //setInterval(() => {}, 1000)
+    // setTimeout(() => {
+    //     clientSocket.emit(' ', 'conectado');
+    // }, 2000)
 
     clientSocket.on('entrar', (nome) => {
-        addPlayer(nome, clientSocket.id);
         console.log(nome + ' entrou no jogo');
-
-        // Mandar players para todos
-        // io.emit('players', players);
     })
 
     clientSocket.on('desenhar', () => {
-        console.log("Desenhando...")
+        // console.log("Desenhando...")
     })
 
     clientSocket.on('submitName', (name) =>{
-        console.log('[User] \033[1;31;40m' + name + ' \033[1;30;40mentrou na partida!')
+        console.log('[Server] \033[1;31;40m' + name + ' \033[1;30;40mentrou na partida!')
+        addPlayer(name, clientSocket.id);
     })
+
+    clientSocket.on('chooseSide', (side) => {
+        const indexPlayer = players.findIndex((e) => e.socketId === clientSocket.id)
+        if (indexPlayer != -1){
+            players[indexPlayer].side = side
+        }
+        console.log("\033[1;31;40m " + players[indexPlayer].nome + " \033[1;30;40mpegou: " + side)
+        io.to(clientSocket.id).emit('chooseSideSucess', players[indexPlayer])
+    })
+
+    // clientSocket.on('updatePaddle', (data) => {
+    //     if (data.player === 'left') {
+    //       leftPaddleY = data.y;
+    //     } else if (data.player === 'right') {
+    //       rightPaddleY = data.y;
+    //     }
+    //     io.broadcast.emit('updatePaddle', data);
+    // });
 })
 
 // Ficar mandando a lista de player para todo mundo a cada 1 segundo

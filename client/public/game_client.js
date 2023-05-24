@@ -1,5 +1,6 @@
 const serverSocket = io('ws://localhost:3000');
 
+let playerSide = null
 function entrar(event){
     serverSocket.emit('entrar');
 }
@@ -18,6 +19,21 @@ function desenhar(event){
     let rightPaddleY = (canvas.height - paddleHeight) / 2;
     let ballY = (canvas.height - ballSize) / 2;
     let ballX = (canvas.width - ballSize) / 2;
+
+    // canvas.addEventListener("mousemove", (event) => {
+    //     const mouseY = event.clientY - canvas.getBoundingClientRect().top;
+    //     serverSocket.emit('updatePaddle', ((mouseY - paddleHeight) / 2));
+    // })
+
+    // canvas.addEventListener('mousemove', (event) => {
+    //   const mouseY = event.clientY - canvas.getBoundingClientRect().top;
+    //   if (playerSide === 'left') {
+    //     leftPaddleY = mouseY - paddleHeight / 2;
+    //   } else {
+    //     rightPaddleY = mouseY - paddleHeight / 2;
+    //   }
+    //   serverSocket.emit('updatePaddle', { player: playerSide, y: mouseY - paddleHeight / 2 });
+    // });
 
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -42,31 +58,51 @@ function desenhar(event){
 
 function submitName(){
     const inputName = document.getElementById('inputName');
-    const tela_chooseName = document.getElementById('chooseName');
-    tela_chooseName.style.display = "none";
-    const tela_chooseSide = document.getElementById('chooseSide');
-    tela_chooseSide.style.display = "flex";
     let name = inputName.value
-    const teste = document.getElementById('player1_name');
-    teste.innerHTML = name
-    console.log('[User] ' + name)
     serverSocket.emit('submitName', name)
+    serverSocket.on('submitNameSucess', () => {
+        const tela_chooseName = document.getElementById('chooseName');
+        tela_chooseName.style.display = "none";
+        const tela_chooseSide = document.getElementById('chooseSide');
+        tela_chooseSide.style.display = "flex";
+    })
 }
 
 function chooseSide(side){
-    const tela_chooseSide = document.getElementById('chooseSide');
-    tela_chooseSide.style.display = "none";
-    const tela_gameContainer = document.getElementById('gameContainer');
-    tela_gameContainer.style.display = "flex";
-    serverSocket.on('chooseSide', side)
+    serverSocket.emit('chooseSide', side);
+    serverSocket.on('chooseSideSucess', (player) => {
+        const tela_chooseSide = document.getElementById('chooseSide');
+        tela_chooseSide.style.display = "none";
+        const tela_gameContainer = document.getElementById('gameContainer');
+        tela_gameContainer.style.display = "flex";
+
+        if(player.side === 'left'){
+            const player1_name = document.getElementById('player1_name');
+            player1_name.innerHTML = player.nome
+        } 
+        else if(player.side === 'right') {
+            const player2_name = document.getElementById('player2_name');
+            player2_name.innerHTML = player.nome
+        }
+    });
 }
 
 serverSocket.on('mensagem', (msg) => {
-    console.log('Mensagem')
+    console.log('Mensagem');
 })
 
 serverSocket.on('players', (players) => {
     console.log('players', players);
+    players.forEach((player) => {
+        if(player.side === 'left'){
+            const player1_name = document.getElementById('player1_name');
+            player1_name.innerHTML = player.nome
+        } 
+        else if(player.side === 'right') {
+            const player2_name = document.getElementById('player2_name');
+            player2_name.innerHTML = player.nome
+        }
+    });
 })
 
 serverSocket.on('erro', (erroMensagem) => {
