@@ -7,9 +7,9 @@
     <title>Pong Alpha 0.1</title>
     <link rel="stylesheet" type="text/css" href="style.css">
 </head>
-<body onload="desenhar()">
+<body>
     <h1>Pong</h1>
-    <!-- <div id="infoBoard">
+    <div id="infoBoard">
         <div id="leftInfo">
             PLAYER 1
             <div id="player1_name">Name</div>
@@ -25,20 +25,21 @@
     <div id="chooseName">
         <label for="inputName">Username:</label>
         <input type="text" id="inputName">
-        <button onClick="submitName()">Enviar</button>
+        <button onClick="enviarNome()">Enviar</button>
     </div>
 
     <div id="chooseSide">
-        <button id="left" onClick="chooseSide('left')">ESQUERDA</button>
-        <button id="right" onClick="chooseSide('right')">DIREITA</button>
-    </div> -->
+        <button id="left" onClick="escolheLado('esquerda')">ESQUERDA</button>
+        <button id="right" onClick="escolheLado('direita')">DIREITA</button>
+    </div>
 
     <div id="gameContainer">
         <canvas id="gameCanvas" width="800" height="600"></canvas>
     </div>
 
-    <!-- <script src="http://localhost:3000/socket.io/socket.io.js"></script> -->
+    <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+    <script src="/true_game_client.js"></script>
     <!-- <script src="/game_client.js"></script> -->
-    <script src="/canvas.js"></script>
+    <!-- <script src="/canvas.js"></script> -->
 </body>
 </html>
