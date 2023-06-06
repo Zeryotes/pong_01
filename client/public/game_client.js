@@ -1,66 +1,29 @@
 const serverSocket = io('ws://localhost:3000');
 
-let playerSide = null
-function entrar(event){
-    serverSocket.emit('entrar');
-}
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
 
-function desenhar(event){
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
+let jogador1 = {};
+let jogador2 = {};
+let bola = {};
 
-    const paddleHeight = 100;
-    const paddleWidth = 10;
-    const distanciaTela = 10;
-    const ballSize = 5;
-    const circle = new Path2D();
-    
-    let leftPaddleY = (canvas.height - paddleHeight) / 2;
-    let rightPaddleY = (canvas.height - paddleHeight) / 2;
-    let ballY = (canvas.height - ballSize) / 2;
-    let ballX = (canvas.width - ballSize) / 2;
+serverSocket.on("inicioJogo", (dadosIniciais) => {
+    jogador1 = dadosIniciais.jogador1
+    jogador2 = dadosIniciais.jogador2
+    bola = dadosIniciais.bola
+});
 
-    // canvas.addEventListener("mousemove", (event) => {
-    //     const mouseY = event.clientY - canvas.getBoundingClientRect().top;
-    //     serverSocket.emit('updatePaddle', ((mouseY - paddleHeight) / 2));
-    // })
+serverSocket.on("atualizaJogo", (dadosAtualizados) => {
+    jogador1 = dadosAtualizados.jogador1
+    jogador2 = dadosAtualizados.jogador2
+    bola = dadosAtualizados.bola
+});
 
-    // canvas.addEventListener('mousemove', (event) => {
-    //   const mouseY = event.clientY - canvas.getBoundingClientRect().top;
-    //   if (playerSide === 'left') {
-    //     leftPaddleY = mouseY - paddleHeight / 2;
-    //   } else {
-    //     rightPaddleY = mouseY - paddleHeight / 2;
-    //   }
-    //   serverSocket.emit('updatePaddle', { player: playerSide, y: mouseY - paddleHeight / 2 });
-    // });
-
-    function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Desenhar paddles
-        ctx.fillStyle = 'black';
-        ctx.fillRect(0+distanciaTela, leftPaddleY, paddleWidth, paddleHeight);
-        ctx.fillRect((canvas.width - paddleWidth - distanciaTela), rightPaddleY, paddleWidth, paddleHeight);
-
-        circle.arc(ballX, ballY, ballSize, 0, 2 * Math.PI);
-
-        // Desenhar bolinha
-        ctx.fill(circle);
-
-        requestAnimationFrame(draw);
-    }
-  
-    draw();
-    // Enviando para o servidor o comando 'desenhar'
-    serverSocket.emit('desenhar')
-}
-
-function submitName(){
+function enviarNome(){
     const inputName = document.getElementById('inputName');
-    let name = inputName.value
-    serverSocket.emit('submitName', name)
-    serverSocket.on('submitNameSucess', () => {
+    let nome = inputName.value
+    serverSocket.emit('enviarNome', nome)
+    serverSocket.on('enviarNomeSucesso', () => {
         const tela_chooseName = document.getElementById('chooseName');
         tela_chooseName.style.display = "none";
         const tela_chooseSide = document.getElementById('chooseSide');
@@ -68,43 +31,81 @@ function submitName(){
     })
 }
 
-function chooseSide(side){
-    serverSocket.emit('chooseSide', side);
-    serverSocket.on('chooseSideSucess', (player) => {
+serverSocket.on('listaJogadores', (listaJogadores) => {
+    console.log('listaJogadores', listaJogadores);
+    listaJogadores.forEach((jogador) => {
+        if(jogador.lado === 'esquerda'){
+            const jogador1_nome = document.getElementById('player1_name');
+            jogador1_nome.innerHTML = jogador.nome
+        } 
+        else if(jogador.lado === 'direita') {
+            const jogador2_nome = document.getElementById('player2_name');
+            jogador2_nome.innerHTML = jogador.nome
+        }
+    });
+})
+
+function escolheLado(ladoJogador){
+    jogadorLado = ladoJogador
+    serverSocket.emit('escolheLado', ladoJogador);
+    serverSocket.on('escolheLadoSucesso', () => {
         const tela_chooseSide = document.getElementById('chooseSide');
         tela_chooseSide.style.display = "none";
         const tela_gameContainer = document.getElementById('gameContainer');
         tela_gameContainer.style.display = "flex";
-
-        if(player.side === 'left'){
-            const player1_name = document.getElementById('player1_name');
-            player1_name.innerHTML = player.nome
-        } 
-        else if(player.side === 'right') {
-            const player2_name = document.getElementById('player2_name');
-            player2_name.innerHTML = player.nome
-        }
     });
+    draw()
 }
 
-serverSocket.on('mensagem', (msg) => {
-    console.log('Mensagem');
+function reiniciarJogo(){
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    draw();
+}
+
+serverSocket.on('reiniciarJogo', () => {
+    reiniciarJogo();
 })
 
-serverSocket.on('players', (players) => {
-    console.log('players', players);
-    players.forEach((player) => {
-        if(player.side === 'left'){
-            const player1_name = document.getElementById('player1_name');
-            player1_name.innerHTML = player.nome
-        } 
-        else if(player.side === 'right') {
-            const player2_name = document.getElementById('player2_name');
-            player2_name.innerHTML = player.nome
-        }
-    });
+serverSocket.on('pontuacao', (lado) => {
+    if (lado === 'esquerda') {
+        const jogador1_pontuacao = document.getElementById('player1_score');
+        jogador1_pontuacao.innerHTML = jogador1.pontuacao
+    } else {
+        const jogador2_pontuacao = document.getElementById('player2_score');
+        jogador2_pontuacao.innerHTML = jogador1.pontuacao
+
+    }
 })
 
-serverSocket.on('erro', (erroMensagem) => {
-    alert(erroMensagem);
-})
+
+function draw(){
+    // if(vencedor){
+    //     console.log('venceu')
+    //     return
+    // }
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    const alturaRaquete = 100
+    const larguraRaquete = 10
+
+    ctx.fillRect(jogador1.x, jogador1.y, larguraRaquete, alturaRaquete);
+    ctx.fillRect(jogador2.x, jogador2.y, larguraRaquete, alturaRaquete);
+
+    let circle = canvas.getContext('2d')
+    circle.fillStyle = 'black';
+    circle.beginPath()
+    circle.arc(bola.x, bola.y, bola.raio, 0, 2 * Math.PI);
+    circle.fill();
+    
+    requestAnimationFrame(draw);
+}
+
+canvas.addEventListener("mousemove", (event) => {
+    let mouseY = event.clientY - canvas.getBoundingClientRect().top
+    setTimeout(() => {
+
+    }, 50)
+    serverSocket.emit('moverRaquete', mouseY)
+});
