@@ -3,7 +3,21 @@ const serverSocket = io('ws://localhost:3000');
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-let jogadorLado = null
+let jogador1 = {};
+let jogador2 = {};
+let bola = {};
+
+serverSocket.on("inicioJogo", (dadosIniciais) => {
+    jogador1 = dadosIniciais.jogador1
+    jogador2 = dadosIniciais.jogador2
+    bola = dadosIniciais.bola
+});
+
+serverSocket.on("atualizaJogo", (dadosAtualizados) => {
+    jogador1 = dadosAtualizados.jogador1
+    jogador2 = dadosAtualizados.jogador2
+    bola = dadosAtualizados.bola
+});
 
 function enviarNome(){
     const inputName = document.getElementById('inputName');
@@ -40,61 +54,47 @@ function escolheLado(ladoJogador){
         const tela_gameContainer = document.getElementById('gameContainer');
         tela_gameContainer.style.display = "flex";
     });
+    draw()
+}
+
+function reiniciarJogo(){
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
     draw();
 }
 
-function desenharJogo(){
-    const infoCanvas = {
-        height: canvas.height,
-        width: canvas.width,
-    } 
-    
-    let mouseY = 0
-
-    canvas.addEventListener('mousemove', (event) => {
-        mouseY = event.clientY - canvas.getBoundingClientRect().top;
-    });
-    serverSocket.emit('desenhaJogo', mouseY, infoCanvas)
-}
-
+serverSocket.on('reiniciarJogo', () => {
+    reiniciarJogo();
+})
 
 
 function draw(){
-    serverSocket.on('desenhaJogoSucesso', () => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        const alturaRaquete = 100
-        const larguraRaquete = 10
-        
-        // Jogador 1
-        const raqueteEsquerda = {
-            desenha() {
-                ctx.fillRect(dados.xJogador1, dados.yJogador1, larguraRaquete, alturaRaquete);
-            }
-        }
-        
-        // Jogador 2
-        const raqueteDireita = {
-            desenha() {
-                ctx.fillRect(dados.xJogador2, dados.yJogador2, larguraRaquete, alturaRaquete);
-            }
-        }
+    // if(vencedor){
+    //     console.log('venceu')
+    //     return
+    // }
 
-        // Bola
-        const bola = {
-            desenha() {
-                let circle = canvas.getContext('2d')
-                circle.fillStyle = 'black';
-                circle.beginPath()
-                circle.arc(dados.xBola, dados.yBola, dados.raioBola, 0, 2 * Math.PI);
-                circle.fill();
-            }
-        }
-        
-        raqueteDireita.desenha();
-        raqueteEsquerda.desenha();
-        bola.desenha();
-        
-        requestAnimationFrame(draw);
-    })
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    const alturaRaquete = 100
+    const larguraRaquete = 10
+
+    ctx.fillRect(jogador1.x, jogador1.y, larguraRaquete, alturaRaquete);
+    ctx.fillRect(jogador2.x, jogador2.y, larguraRaquete, alturaRaquete);
+
+    let circle = canvas.getContext('2d')
+    circle.fillStyle = 'black';
+    circle.beginPath()
+    circle.arc(bola.x, bola.y, bola.raio, 0, 2 * Math.PI);
+    circle.fill();
+    
+    requestAnimationFrame(draw);
 }
+
+canvas.addEventListener("mousemove", (event) => {
+    let mouseY = event.clientY - canvas.getBoundingClientRect().top
+    setTimeout(() => {
+
+    }, 50)
+    serverSocket.emit('moverRaquete', mouseY)
+});
