@@ -67,6 +67,17 @@ serverSocket.on('reiniciarJogo', () => {
     reiniciarJogo();
 })
 
+serverSocket.on('pontuacao', (lado) => {
+    if (lado === 'esquerda') {
+        const jogador1_pontuacao = document.getElementById('player1_score');
+        jogador1_pontuacao.innerHTML = jogador1.pontuacao
+    } else {
+        const jogador2_pontuacao = document.getElementById('player2_score');
+        jogador2_pontuacao.innerHTML = jogador1.pontuacao
+
+    }
+})
+
 
 function draw(){
     // if(vencedor){

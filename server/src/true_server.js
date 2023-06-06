@@ -37,7 +37,7 @@ const bola = {
     x: 400,
     y: 300,
     raio: 5,
-    vel: 4,
+    vel: 5,
     direcaoX: Math.random() > 0.5 ? 1 : -1,
     direcaoY: Math.random() > 0.5 ? 1 : -1,
 }
@@ -109,9 +109,9 @@ io.on('connection', (clientSocket) => {
             const jogador = listaJogadores[indexJogador]
             if (mouseY + alturaRaquete > hCanvas){
                 if(jogador.lado === "esquerda"){
-                    jogador1.y = mouseY - alturaRaquete
+                    jogador1.y = hCanvas - alturaRaquete
                 } else {
-                    jogador2.y = mouseY - alturaRaquete
+                    jogador2.y = hCanvas - alturaRaquete
                 }
             } else {
                 if(jogador.lado === "esquerda"){
@@ -142,7 +142,7 @@ function dadosIniciais(){
     const bola = {
         x: wCanvas/2,
         y: hCanvas/2,
-        vel: 4,
+        vel: 5,
         raio: 5,
         direcaoX: Math.random() > 0.5 ? 1 : -1,
         direcaoY: Math.random() > 0.5 ? 1 : -1,
@@ -172,41 +172,48 @@ function atualizarDadosJogo(){
     const topoBola = bola.y - bola.raio
     const baseBola = bola.y + bola.raio
 
+    // Colisão com a esquerda
     if (esquerdaBola < 0 ){
-        console.log('Ponto do lado direito')
-        bola.vel = 0
+        io.emit('pontuacao', 'direita')
+        jogador2.pontuacao += 1
+        resetarBola()
     }
-
+    
+    // Colisão teto/chão
     if (topoBola < 0 || baseBola >= hCanvas){
         bola.direcaoY *= -1
     }
-
+    
+    // Colisão com a direita
     if (direitaBola >= wCanvas ){
-        console.log('Ponto do lado esquerdo')
-        bola.vel = 0
+        io.emit('pontuacao', 'esquerda')
+        jogador1.pontuacao += 1
+        resetarBola()
     }
 
-    // if (topoBola <= dados.xJogador1 + larguraRaquete){
-    //     if ((dados.yBola + dados.raioBola) >= dados.yJogador1 && dados.yBola - dados.raioBola <= dados.yJogador1 + alturaRaquete){
-    //         console.log("Bateu na raquete [Esquerda]")
-    //         dados.xBolaDirecao = dados.xBolaDirecao * -1
-    //         dados.velBola = dados.velBola + 0.1
-    //     }
-    // }
-    
-    // if ((dados.xBola + dados.raioBola) >= dados.xJogador2){
-    //     if ((dados.yBola + dados.raioBola) >= dados.yJogador2 && dados.yBola - dados.raioBola <= dados.yJogador2 + alturaRaquete){
-    //         console.log("Bateu na raquete [Direita]")
-    //         dados.xBolaDirecao = dados.xBolaDirecao * -1
-    //         dados.yBolaDirecao = ((bola.y - dados.yJogador2) * 2/100) - 1
-    //         dados.velBola = dados.velBola + 0.1
-    //     }
-    // }
+    // Ricochete da raquete da esquerda
+    if (esquerdaBola <= jogador1.x + larguraRaquete){
+        if (baseBola >= jogador1.y && topoBola <= jogador1.y + alturaRaquete){
+            bola.direcaoX *= -1
+            bola.direcaoY = ((bola.y - jogador1.y) * 2/100) - 1
+            bola.vel += 0.1
+        }
+    }
+
+    // Ricochete da raquete da direita
+    if (direitaBola >= jogador2.x){
+        if (baseBola >= jogador2.y && topoBola <= jogador2.y + alturaRaquete){
+            bola.direcaoX *= -1
+            bola.direcaoY = ((bola.y - jogador2.y) * 2/100) - 1
+            bola.vel += 0.1
+        }
+    }
 }
 
 function resetarBola(){
     bola.x = 400
     bola.y = 300
+    bola.vel = 5
     bola.direcaoX = Math.random() > 0.5 ? 1 : -1
     bola.direcaoY = Math.random() > 0.5 ? 1 : -1
 }
